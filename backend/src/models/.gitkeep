@@ -1,0 +1,9 @@
+# Placeholder directories for backend source
+# These will be populated when business logic is implemented.
+
+# src/controllers/ — route handlers (auth.controller.ts, content.controller.ts created)
+# src/models/      — Mongoose models (User.model.ts, Content.model.ts created)
+# src/routes/      — Express routers (auth.routes.ts, content.routes.ts created)
+# src/middlewares/ — Express middlewares (auth.ts, errorHandler.ts created)
+# src/utils/       — Utility helpers (jwt.utils.ts, helpers.ts created)
+# src/config/      — Configuration (db.ts, env.ts created)

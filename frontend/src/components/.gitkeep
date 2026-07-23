@@ -1,0 +1,7 @@
+# This directory holds shared/reusable React components.
+#
+# Suggested sub-directories:
+#   ui/        — Primitive UI components (Button, Input, Badge, Modal…)
+#   layout/    — Layout components (Navbar, Sidebar, Footer…)
+#   admin/     — Admin-specific components (DataTable, ContentEditor…)
+#   public/    — Public-facing components (ArticleCard, Hero…)

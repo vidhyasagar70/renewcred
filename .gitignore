@@ -1,0 +1,17 @@
+# CMS Monorepo — Root .gitignore
+node_modules/
+.env
+.env.local
+.env.*.local
+dist/
+build/
+.next/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+coverage/
+.nyc_output/
+*.tsbuildinfo
