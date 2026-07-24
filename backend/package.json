@@ -9,7 +9,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint src/**/*.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed": "ts-node-dev --transpile-only src/utils/seed.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

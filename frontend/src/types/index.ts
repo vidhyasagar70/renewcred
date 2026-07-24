@@ -35,28 +35,25 @@ export interface RegisterCredentials {
 
 // ─── Content ──────────────────────────────────────────────────────────────────
 
-export type ContentStatus = 'draft' | 'published' | 'archived';
-export type ContentType = 'article' | 'page' | 'media';
+export type ContentStatus = 'draft' | 'published';
 
 export interface Content {
   _id: string;
   title: string;
   slug: string;
-  type: ContentType;
+  category: string;
   status: ContentStatus;
-  body?: string;
-  excerpt?: string;
-  tags: string[];
+  body: string;
+  summary: string;
   author: User | string;
-  publishedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ContentFilters {
-  status: ContentStatus | 'all';
-  type: ContentType | 'all';
-  search: string;
+  status?: ContentStatus | 'all';
+  type?: string | 'all';
+  search?: string;
   page?: number;
   limit?: number;
 }
@@ -75,6 +72,11 @@ export interface ContentState {
   error: string | null;
   pagination: Pagination;
   filters: ContentFilters;
+  stats?: {
+    total: number;
+    published: number;
+    drafts: number;
+  };
 }
 
 // ─── API Responses ────────────────────────────────────────────────────────────

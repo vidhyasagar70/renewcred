@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { User, AuthState, LoginCredentials, RegisterCredentials } from '@/types';
+import authService from '@/services/authService';
 
 // ── Initial state ─────────────────────────────────────────────────────────────
 const initialState: AuthState = {
@@ -10,16 +11,19 @@ const initialState: AuthState = {
   error: null,
 };
 
-// ── Async thunks (implement API calls in /services) ───────────────────────────
+// ── Async thunks ──────────────────────────────────────────────────────────────
 
 export const loginUser = createAsyncThunk<
   { user: User; token: string },
   LoginCredentials,
   { rejectValue: string }
->('auth/login', async (_credentials, { rejectWithValue }) => {
+>('auth/login', async (credentials, { rejectWithValue }) => {
   try {
-    // TODO: call authService.login(_credentials) when service layer is built
-    return rejectWithValue('Not implemented yet');
+    const data = await authService.login(credentials);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cms_token', data.token);
+    }
+    return data;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Login failed';
     return rejectWithValue(message);
@@ -30,10 +34,13 @@ export const registerUser = createAsyncThunk<
   { user: User; token: string },
   RegisterCredentials,
   { rejectValue: string }
->('auth/register', async (_credentials, { rejectWithValue }) => {
+>('auth/register', async (credentials, { rejectWithValue }) => {
   try {
-    // TODO: call authService.register(_credentials) when service layer is built
-    return rejectWithValue('Not implemented yet');
+    const data = await authService.register(credentials);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cms_token', data.token);
+    }
+    return data;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Registration failed';
     return rejectWithValue(message);
@@ -41,7 +48,38 @@ export const registerUser = createAsyncThunk<
 });
 
 export const logoutUser = createAsyncThunk('auth/logout', async () => {
-  // TODO: call authService.logout() to invalidate server-side session
+  try {
+    await authService.logout();
+  } catch (err) {
+    console.error('Logout error on server:', err);
+  } finally {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cms_token');
+    }
+  }
+});
+
+export const checkAuth = createAsyncThunk<
+  User,
+  void,
+  { rejectValue: string }
+>('auth/check', async (_, { rejectWithValue }) => {
+  try {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('cms_token');
+      if (!token) {
+        return rejectWithValue('No session token found');
+      }
+    }
+    const user = await authService.getMe();
+    return user;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Session verification failed';
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cms_token');
+    }
+    return rejectWithValue(message);
+  }
 });
 
 // ── Slice ─────────────────────────────────────────────────────────────────────
@@ -99,6 +137,27 @@ const authSlice = createSlice({
         state.error = action.payload ?? 'An unexpected error occurred';
       });
 
+    // ── checkAuth ──────────────────────────────────────────────────────────
+    builder
+      .addCase(checkAuth.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        if (typeof window !== 'undefined') {
+          state.token = localStorage.getItem('cms_token');
+        }
+      })
+      .addCase(checkAuth.rejected, (state) => {
+        state.isLoading = false;
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+      });
+
     // ── logoutUser ─────────────────────────────────────────────────────────
     builder.addCase(logoutUser.fulfilled, () => initialState);
   },
@@ -106,3 +165,4 @@ const authSlice = createSlice({
 
 export const { setCredentials, clearError } = authSlice.actions;
 export default authSlice.reducer;
+

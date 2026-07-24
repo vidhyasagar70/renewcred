@@ -7,18 +7,25 @@ import type {
 } from '@/types';
 
 /**
- * Content service — wraps all /api/content calls.
+ * Content service — wraps all public and admin content calls.
  * Wire these methods into the Redux async thunks in contentSlice.ts.
  */
 const contentService = {
-  async getAll(filters?: Partial<ContentFilters>): Promise<{
+  // ── Public Routes ──────────────────────────────────────────────────────────
+  async getPublicList(filters?: Partial<ContentFilters>): Promise<{
     items: Content[];
     total: number;
     totalPages: number;
   }> {
+    const params: any = { ...filters };
+    if (filters?.type && filters.type !== 'all') {
+      params.category = filters.type;
+    }
+    delete params.type;
+
     const { data } = await apiClient.get<PaginatedResponse<Content>>(
-      '/content',
-      { params: filters }
+      '/public/content',
+      { params }
     );
     return {
       items: data.data ?? [],
@@ -27,32 +34,66 @@ const contentService = {
     };
   },
 
-  async getById(id: string): Promise<Content> {
+  async getPublicBySlug(slug: string): Promise<Content> {
     const { data } = await apiClient.get<ApiResponse<Content>>(
-      `/content/${id}`
+      `/public/content/${slug}`
     );
     return data.data!;
   },
 
-  async create(payload: Partial<Content>): Promise<Content> {
+  // ── Admin Routes ───────────────────────────────────────────────────────────
+  async adminGetAll(filters?: Partial<ContentFilters>): Promise<{
+    items: Content[];
+    total: number;
+    totalPages: number;
+    stats?: { total: number; published: number; drafts: number };
+  }> {
+    const params: any = { ...filters };
+    if (filters?.type && filters.type !== 'all') {
+      params.category = filters.type;
+    }
+    delete params.type;
+
+    const { data } = await apiClient.get<any>(
+      '/admin/content',
+      { params }
+    );
+    return {
+      items: data.data ?? [],
+      total: data.pagination.total,
+      totalPages: data.pagination.totalPages,
+      stats: data.stats,
+    };
+  },
+
+  async adminGetById(id: string): Promise<Content> {
+    const { data } = await apiClient.get<ApiResponse<Content>>(
+      `/admin/content/${id}`
+    );
+    return data.data!;
+  },
+
+
+  async adminCreate(payload: Partial<Content>): Promise<Content> {
     const { data } = await apiClient.post<ApiResponse<Content>>(
-      '/content',
+      '/admin/content',
       payload
     );
     return data.data!;
   },
 
-  async update(id: string, payload: Partial<Content>): Promise<Content> {
+  async adminUpdate(id: string, payload: Partial<Content>): Promise<Content> {
     const { data } = await apiClient.put<ApiResponse<Content>>(
-      `/content/${id}`,
+      `/admin/content/${id}`,
       payload
     );
     return data.data!;
   },
 
-  async delete(id: string): Promise<void> {
-    await apiClient.delete(`/content/${id}`);
+  async adminDelete(id: string): Promise<void> {
+    await apiClient.delete(`/admin/content/${id}`);
   },
 };
 
 export default contentService;
+

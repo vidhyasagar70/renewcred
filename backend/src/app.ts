@@ -8,6 +8,7 @@ import { errorHandler } from './middlewares/errorHandler';
 // ── Route imports (add as features are built) ──────────────────────────────
 import authRoutes from './routes/auth.routes';
 import contentRoutes from './routes/content.routes';
+import publicRoutes from './routes/public.routes';
 
 const app: Application = express();
 
@@ -40,8 +41,10 @@ app.get('/api/health', (_req: Request, res: Response) => {
 });
 
 // ── API routes ────────────────────────────────────────────────────────────────
-app.use('/api/auth', authRoutes);
-app.use('/api/content', contentRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/public', publicRoutes);
+app.use('/api/v1/admin/content', contentRoutes);
+
 
 // ── 404 catch-all ─────────────────────────────────────────────────────────────
 app.use((_req: Request, _res: Response, next: NextFunction) => {

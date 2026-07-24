@@ -71,7 +71,7 @@ services:
     ports:
       - '3000:3000'
     environment:
-      NEXT_PUBLIC_API_BASE_URL: http://backend:5000/api
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:5000/api/v1
       WATCHPACK_POLLING: 'true'     # Required for hot-reload in Docker on Windows/macOS
     volumes:
       # Mount source for hot-reload; exclude node_modules and .next with anonymous volumes
