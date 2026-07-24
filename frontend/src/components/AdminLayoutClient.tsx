@@ -7,188 +7,183 @@ import { logoutUser } from '@/store/slices/authSlice';
 import AdminGuard from './AdminGuard';
 import Link from 'next/link';
 
-interface AdminLayoutClientProps {
-  children: React.ReactNode;
-}
+const NAV_ITEMS = [
+  {
+    href:  '/admin/dashboard',
+    label: 'Dashboard',
+    icon:  (
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+          d="M3 7h6v6H3zm0 8h6v4H3zm8-8h10v4H11zm0 8h10v4H11z" />
+      </svg>
+    ),
+  },
+  {
+    href:  '/admin/content/new',
+    label: 'New Article',
+    icon:  (
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+      </svg>
+    ),
+  },
+];
 
-export default function AdminLayoutClient({ children }: AdminLayoutClientProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {
+  const pathname   = usePathname();
+  const router     = useRouter();
+  const dispatch   = useAppDispatch();
+  const { user }   = useAppSelector((state) => state.auth);
+  const [open, setOpen] = useState(false);
 
-  const handleSignOut = async () => {
+  const handleLogout = async () => {
     await dispatch(logoutUser());
-    router.push('/admin/login');
+    router.replace('/admin/login');
   };
 
-  const navItems = [
-    { label: 'Dashboard', href: '/admin/dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z' },
-    { label: 'Write Article', href: '/admin/content/new', icon: 'M12 4v16m8-8H4' },
-  ];
+  const isLogin = pathname === '/admin/login';
 
   return (
     <AdminGuard>
-      <div className="flex h-screen overflow-hidden bg-gray-950 text-gray-100">
-        
-        {/* ── Desktop Sidebar ─────────────────────────────────────────────────── */}
-        <aside className="hidden w-64 flex-shrink-0 flex-col border-r border-gray-800 bg-gray-900 lg:flex">
-          {/* Logo */}
-          <div className="flex h-16 items-center gap-2 border-b border-gray-800 px-6">
-            <div className="h-6 w-6 rounded bg-primary-600 animate-pulse" />
-            <span className="text-lg font-bold tracking-tight text-white">CMS Console</span>
-          </div>
+      {isLogin ? (
+        // Login page — no shell
+        <>{children}</>
+      ) : (
+        <div className="flex h-screen overflow-hidden bg-neutral-50 font-sans">
 
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto px-4 py-6">
-            <ul className="space-y-1.5">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
-                        isActive
-                          ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20'
-                          : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                      }`}
-                    >
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon}></path>
-                      </svg>
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+          {/* ── Mobile overlay ────────────────────────────────────────── */}
+          {open && (
+            <div
+              className="fixed inset-0 z-20 bg-black/40 lg:hidden"
+              onClick={() => setOpen(false)}
+            />
+          )}
 
-          {/* User Profile */}
-          <div className="border-t border-gray-800 p-4 bg-gray-900/50">
-            <div className="flex items-center gap-3 rounded-lg bg-gray-800/40 p-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-600 font-bold text-white uppercase text-sm">
-                {user?.name?.slice(0, 2) || 'AD'}
-              </div>
-              <div className="overflow-hidden">
-                <p className="truncate text-sm font-medium text-white">{user?.name || 'Admin User'}</p>
-                <p className="truncate text-xs text-gray-500">{user?.email || 'admin@example.com'}</p>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* ── Mobile Sidebar Overlay ─────────────────────────────────────────── */}
-        {isMobileSidebarOpen && (
-          <div 
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
-            onClick={() => setIsMobileSidebarOpen(false)}
-          />
-        )}
-
-        {/* Mobile Sidebar */}
-        <aside
-          className={`fixed bottom-0 top-0 left-0 z-50 flex w-64 flex-col border-r border-gray-800 bg-gray-900 transition-transform duration-300 lg:hidden ${
-            isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-          <div className="flex h-16 items-center justify-between border-b border-gray-800 px-6">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-primary-600" />
-              <span className="text-lg font-bold tracking-tight text-white">CMS Console</span>
-            </div>
-            <button 
-              className="text-gray-400 hover:text-white"
-              onClick={() => setIsMobileSidebarOpen(false)}
-            >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto px-4 py-6">
-            <ul className="space-y-1.5">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setIsMobileSidebarOpen(false)}
-                      className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
-                        isActive
-                          ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20'
-                          : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                      }`}
-                    >
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon}></path>
-                      </svg>
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          <div className="border-t border-gray-800 p-4 bg-gray-900/50">
-            <div className="flex items-center gap-3 rounded-lg bg-gray-800/40 p-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-600 font-bold text-white uppercase text-sm">
-                {user?.name?.slice(0, 2) || 'AD'}
-              </div>
-              <div className="overflow-hidden">
-                <p className="truncate text-sm font-medium text-white">{user?.name || 'Admin User'}</p>
-                <p className="truncate text-xs text-gray-500">{user?.email || 'admin@example.com'}</p>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* ── Main content area ────────────────────────────────────────────── */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Top bar */}
-          <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-gray-800 bg-gray-900 px-6">
-            <div className="flex items-center gap-4">
-              {/* Mobile Burger Button */}
+          {/* ── Sidebar ───────────────────────────────────────────────── */}
+          <aside
+            className={`fixed inset-y-0 left-0 z-30 flex w-64 flex-col bg-white border-r border-black
+              transform transition-transform duration-200
+              ${open ? 'translate-x-0' : '-translate-x-full'} lg:relative lg:translate-x-0`}
+          >
+            {/* Sidebar header */}
+            <div className="flex h-14 items-center justify-between border-b border-black px-5">
+              <Link href="/admin/dashboard" className="font-sans text-base font-black tracking-tighter text-black uppercase">
+                CMS<span className="font-light">·</span>Admin
+              </Link>
               <button
-                className="text-gray-400 hover:text-white lg:hidden"
-                onClick={() => setIsMobileSidebarOpen(true)}
+                onClick={() => setOpen(false)}
+                className="lg:hidden p-1 text-neutral-400 hover:text-black"
               >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              <h2 className="hidden text-sm font-medium text-gray-400 sm:block">
-                Content Management System Control
-              </h2>
             </div>
-            
-            <div className="flex items-center gap-4">
-              <Link href="/" target="_blank" className="text-xs text-primary-400 hover:underline">
-                View Public Site ↗
-              </Link>
-              {pathname !== '/admin/login' && (
-                <button 
-                  onClick={handleSignOut}
-                  className="rounded bg-gray-800 hover:bg-gray-700 px-3.5 py-1.5 text-xs font-semibold text-gray-200 border border-gray-700 transition-all hover:text-white" 
-                  id="admin-logout-btn"
-                >
-                  Sign out
-                </button>
-              )}
-            </div>
-          </header>
 
-          {/* Page content */}
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-950">
-            {children}
-          </main>
+            {/* Nav */}
+            <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+              <p className="label-xs px-3 mb-3 text-neutral-300">Navigation</p>
+              {NAV_ITEMS.map(({ href, label, icon }) => {
+                const active = pathname === href || (href !== '/admin/content/new' && pathname.startsWith(href));
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-all duration-100 border ${
+                      active
+                        ? 'bg-black text-white border-black shadow-hard-sm'
+                        : 'bg-white text-neutral-600 border-transparent hover:border-black hover:text-black hover:bg-neutral-50'
+                    }`}
+                  >
+                    {icon}
+                    {label}
+                  </Link>
+                );
+              })}
+
+              {/* Public site link */}
+              <div className="pt-4 mt-4 border-t border-neutral-100">
+                <p className="label-xs px-3 mb-3 text-neutral-300">External</p>
+                <Link
+                  href="/"
+                  target="_blank"
+                  className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-neutral-500 hover:text-black transition-colors"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Public Site ↗
+                </Link>
+              </div>
+            </nav>
+
+            {/* User / Logout */}
+            <div className="border-t border-black p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-8 w-8 bg-black flex items-center justify-center text-white text-xs font-black uppercase shrink-0">
+                  {user?.name?.slice(0, 2) ?? 'AU'}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-black truncate">{user?.name ?? 'Administrator'}</p>
+                  <p className="text-[11px] text-neutral-400 truncate">{user?.email ?? ''}</p>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full border border-neutral-300 bg-white text-neutral-600 text-xs font-semibold px-3 py-2 hover:bg-black hover:text-white hover:border-black transition-all"
+              >
+                Sign Out
+              </button>
+            </div>
+          </aside>
+
+          {/* ── Main area ─────────────────────────────────────────────── */}
+          <div className="flex flex-1 flex-col overflow-hidden">
+
+            {/* Top bar */}
+            <div className="flex h-14 items-center justify-between border-b border-neutral-200 bg-white px-6">
+              {/* Mobile burger */}
+              <button
+                onClick={() => setOpen(true)}
+                className="lg:hidden p-1 text-neutral-500 hover:text-black"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+
+              {/* Breadcrumb */}
+              <div className="hidden lg:flex items-center gap-2 text-xs text-neutral-400 font-sans">
+                <span>Admin</span>
+                <span>/</span>
+                <span className="text-black font-semibold capitalize">
+                  {pathname.split('/').pop()?.replace('-', ' ') ?? 'Dashboard'}
+                </span>
+              </div>
+
+              {/* Right actions */}
+              <div className="flex items-center gap-3 ml-auto">
+                <Link
+                  href="/admin/content/new"
+                  className="hidden sm:inline-flex btn-primary text-xs px-4 py-2"
+                >
+                  + New Article
+                </Link>
+                <div className="h-7 w-7 bg-black flex items-center justify-center text-white text-[10px] font-black uppercase">
+                  {user?.name?.slice(0, 2) ?? 'AU'}
+                </div>
+              </div>
+            </div>
+
+            {/* Page content */}
+            <main className="flex-1 overflow-y-auto bg-neutral-50 p-6 lg:p-8">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
+      )}
     </AdminGuard>
   );
 }

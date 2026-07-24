@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: {
@@ -8,30 +9,58 @@ export const metadata: Metadata = {
   description: 'Discover and explore content from the CMS Platform.',
 };
 
-export default function PublicLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      {/* Public site header — implement in /components/layout/PublicHeader.tsx */}
-      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/80">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <span className="text-xl font-bold text-primary-600">CMS Platform</span>
-          <nav className="hidden gap-6 text-sm font-medium text-gray-600 sm:flex dark:text-gray-400">
-            <a href="/" className="hover:text-primary-600">Home</a>
-            <a href="/articles" className="hover:text-primary-600">Articles</a>
+    <div className="flex min-h-screen flex-col bg-white">
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 bg-white border-b border-black">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+          {/* Wordmark */}
+          <Link href="/" className="font-sans text-lg font-black tracking-tighter text-black uppercase">
+            CMS<span className="font-light">·</span>Platform
+          </Link>
+
+          {/* Nav */}
+          <nav className="flex items-center gap-8">
+            <Link
+              href="/"
+              className="text-sm font-semibold text-neutral-600 hover:text-black transition-colors tracking-wide"
+            >
+              Home
+            </Link>
+            <Link
+              href="/articles"
+              className="text-sm font-semibold text-neutral-600 hover:text-black transition-colors tracking-wide"
+            >
+              Articles
+            </Link>
+            <Link
+              href="/admin/login"
+              className="text-sm font-semibold bg-black text-white px-4 py-1.5 border border-black hover:bg-white hover:text-black transition-all tracking-wide"
+            >
+              Admin →
+            </Link>
           </nav>
         </div>
       </header>
 
-      {/* Page content */}
+      {/* ── Page Content ───────────────────────────────────────────────── */}
       <main className="flex-1">{children}</main>
 
-      {/* Public site footer */}
-      <footer className="border-t border-gray-200 bg-gray-50 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-500">
-        © {new Date().getFullYear()} CMS Platform. All rights reserved.
+      {/* ── Footer ─────────────────────────────────────────────────────── */}
+      <footer className="border-t border-neutral-200 bg-neutral-50">
+        <div className="mx-auto max-w-6xl px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <span className="font-sans text-sm font-black tracking-tighter text-black uppercase">
+            CMS·Platform
+          </span>
+          <p className="text-xs text-neutral-400 tracking-wide">
+            © {new Date().getFullYear()} CMS Platform. All rights reserved.
+          </p>
+          <div className="flex gap-6">
+            <Link href="/" className="text-xs text-neutral-500 hover:text-black transition-colors">Home</Link>
+            <Link href="/articles" className="text-xs text-neutral-500 hover:text-black transition-colors">Articles</Link>
+          </div>
+        </div>
       </footer>
     </div>
   );

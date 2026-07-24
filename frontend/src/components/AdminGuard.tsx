@@ -5,69 +5,51 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { checkAuth } from '@/store/slices/authSlice';
 
-interface AdminGuardProps {
-  children: React.ReactNode;
-}
+interface AdminGuardProps { children: React.ReactNode; }
 
 export default function AdminGuard({ children }: AdminGuardProps) {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, isLoading, user } = useAppSelector((state) => state.auth);
-  const [isMounted, setIsMounted] = useState(false);
+  const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    setMounted(true);
     const token = typeof window !== 'undefined' ? localStorage.getItem('cms_token') : null;
-    if (!isAuthenticated && token) {
-      dispatch(checkAuth());
-    }
+    if (!isAuthenticated && token) dispatch(checkAuth());
   }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
-    if (!isMounted) return;
-
-    const token = typeof window !== 'undefined' ? localStorage.getItem('cms_token') : null;
-    const isLoginPage = pathname === '/admin/login';
-
+    if (!mounted) return;
+    const token      = typeof window !== 'undefined' ? localStorage.getItem('cms_token') : null;
+    const isLoginPg  = pathname === '/admin/login';
     if (isLoading) return;
 
-    if (!isAuthenticated && !token) {
-      if (!isLoginPage) {
-        router.replace('/admin/login');
-      }
-    } else if (isAuthenticated) {
-      if (isLoginPage) {
-        router.replace('/admin/dashboard');
-      }
+    if (!isAuthenticated && !token && !isLoginPg) {
+      router.replace('/admin/login');
+    } else if (isAuthenticated && isLoginPg) {
+      router.replace('/admin/dashboard');
     }
-  }, [isAuthenticated, isLoading, pathname, router, isMounted]);
+  }, [isAuthenticated, isLoading, pathname, router, mounted]);
 
-  // Loading screen (premium visual style)
-  if ((isLoading && !isAuthenticated) || !isMounted) {
+  // Loading spinner — B&W
+  if ((isLoading && !isAuthenticated) || !mounted) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-gray-950 text-white">
-        <div className="relative flex h-16 w-16 items-center justify-center">
-          <div className="absolute h-12 w-12 animate-ping rounded-full border-4 border-primary-500/20"></div>
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-t-primary-600 border-r-transparent border-b-transparent border-l-transparent"></div>
-        </div>
-        <p className="mt-4 text-sm font-medium text-gray-400 tracking-wider">
-          Verifying credentials...
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-white">
+        <div className="h-8 w-8 animate-spin border-2 border-black border-t-transparent mb-4" />
+        <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+          Verifying session…
         </p>
       </div>
     );
   }
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('cms_token') : null;
-  const isLoginPage = pathname === '/admin/login';
+  const token      = typeof window !== 'undefined' ? localStorage.getItem('cms_token') : null;
+  const isLoginPg  = pathname === '/admin/login';
 
-  if (!isAuthenticated && !isLoginPage && !token) {
-    return null;
-  }
-
-  if (isAuthenticated && isLoginPage) {
-    return null;
-  }
+  if (!isAuthenticated && !isLoginPg && !token) return null;
+  if (isAuthenticated && isLoginPg) return null;
 
   return <>{children}</>;
 }

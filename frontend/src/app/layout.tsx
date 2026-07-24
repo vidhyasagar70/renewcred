@@ -24,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100" suppressHydrationWarning>
+      <body className="min-h-screen bg-white text-neutral-900 antialiased font-sans" suppressHydrationWarning>
         <StoreProvider>{children}</StoreProvider>
       </body>
     </html>

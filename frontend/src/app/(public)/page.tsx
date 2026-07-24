@@ -10,106 +10,119 @@ export default function HomePage() {
   const { items, isLoading, error } = useAppSelector((state) => state.content);
 
   useEffect(() => {
-    // Fetch only published content
     dispatch(fetchContent({ status: 'published' }));
   }, [dispatch]);
 
   return (
-    <div className="bg-gray-950 min-h-screen text-gray-100">
-      
-      {/* Hero Section */}
-      <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 border-b border-gray-900">
-        <div className="animate-fade-in text-center space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary-500/20 bg-primary-500/5 px-3 py-1 text-xs font-medium text-primary-400">
-            <span className="flex h-2 w-2 rounded-full bg-primary-400 animate-ping" />
-            Headless CMS Platform
-          </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
-            Modern Content, <span className="text-primary-500">Rendered Instantly</span>
-          </h1>
-          <p className="mx-auto max-w-2xl text-base sm:text-lg text-gray-400">
-            A production-ready headless CMS. Create rich markdown articles, math formulas, and nested documentation in a unified workspace.
-          </p>
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center pt-4">
-            <Link href="/articles" className="rounded-lg bg-primary-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-600/25 transition-all hover:bg-primary-500 hover:shadow-primary-500/35">
-              Browse Articles
-            </Link>
-            <Link href="/admin/login" className="rounded-lg border border-gray-800 bg-gray-900/50 px-6 py-3.5 text-sm font-semibold text-gray-300 transition-all hover:bg-gray-800 hover:text-white">
-              Admin Console →
-            </Link>
+    <div className="bg-white">
+
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="border-b border-neutral-200">
+        <div className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
+          <div className="max-w-3xl">
+            <p className="label-xs mb-6">Headless Content Platform</p>
+            <h1 className="font-sans text-5xl sm:text-7xl font-black text-black leading-none tracking-tighter">
+              Content,<br />
+              <span className="font-serif italic font-normal">rendered precisely.</span>
+            </h1>
+            <p className="mt-8 text-lg text-neutral-500 leading-relaxed max-w-xl font-sans">
+              A production-ready headless CMS. Write rich Markdown, mathematical equations, and nested
+              documentation — published instantly to your public site.
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row gap-4">
+              <Link href="/articles" className="btn-primary text-sm px-8 py-3">
+                Browse Articles →
+              </Link>
+              <Link href="/admin/login" className="btn-secondary text-sm px-8 py-3">
+                Admin Console
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Articles Section */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">Latest Published Articles</h2>
-            <p className="mt-1 text-sm text-gray-400">Explore documentation, blog posts, and pages.</p>
-          </div>
-          <Link href="/articles" className="text-sm font-semibold text-primary-400 hover:text-primary-350">
+      {/* ── Featured Articles ─────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <div className="flex items-baseline justify-between border-b border-black pb-4 mb-12">
+          <h2 className="font-sans text-2xl font-black tracking-tight text-black uppercase">
+            Latest Articles
+          </h2>
+          <Link href="/articles" className="text-xs font-semibold text-neutral-500 hover:text-black transition-colors uppercase tracking-widest">
             View All →
           </Link>
         </div>
 
         {isLoading ? (
-          <div className="flex h-40 items-center justify-center text-gray-400">
-            <svg className="mr-3 h-6 w-6 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Loading articles...
+          <div className="flex h-48 items-center justify-center">
+            <div className="h-8 w-8 animate-spin border-2 border-black border-t-transparent" />
           </div>
         ) : error ? (
-          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-red-400 text-center">
-            {error}
+          <div className="border border-black p-6">
+            <p className="text-sm font-semibold text-black">Failed to load articles.</p>
+            <p className="text-xs text-neutral-500 mt-1">{error}</p>
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 border border-dashed border-gray-800 rounded-xl bg-gray-900/10">
-            No published articles found. Run the seed script inside the backend to populate contents.
+          <div className="border border-dashed border-neutral-300 py-20 text-center">
+            <p className="text-sm text-neutral-400">
+              No published articles yet.{' '}
+              <Link href="/admin/login" className="underline text-black">
+                Sign in to create one →
+              </Link>
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-px bg-neutral-200 border border-neutral-200 sm:grid-cols-2 lg:grid-cols-3">
             {items.slice(0, 6).map((item) => (
-              <article 
-                key={item._id} 
-                className="flex flex-col justify-between rounded-2xl border border-gray-800 bg-gray-900/20 p-6 transition-all hover:border-gray-700 hover:bg-gray-900/40 hover:-translate-y-1 duration-300"
+              <article
+                key={item._id}
+                className="flex flex-col bg-white p-8 group transition-all hover:-translate-y-0.5 hover:shadow-hard duration-150"
               >
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded bg-primary-950 text-primary-400 border border-primary-500/10 px-2 py-0.5 text-xs font-semibold">
-                      {item.category}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white line-clamp-2 hover:text-primary-400 transition-colors">
-                      <Link href={`/content/${item.slug}`}>
-                        {item.title}
-                      </Link>
-                    </h3>
-                    <p className="mt-2.5 text-sm text-gray-400 line-clamp-3 leading-relaxed">
-                      {item.summary}
-                    </p>
-                  </div>
-                </div>
+                {/* Category */}
+                <p className="label-xs text-neutral-400 mb-4">{item.category}</p>
 
-                <div className="mt-6 border-t border-gray-800/80 pt-4 flex items-center justify-between text-xs text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full bg-primary-600 flex items-center justify-center font-bold text-white uppercase text-[10px]">
-                      {typeof item.author === 'object' ? item.author.name.slice(0,2) : 'AD'}
+                {/* Title */}
+                <h3 className="font-sans text-xl font-bold text-black leading-snug mb-3 group-hover:underline underline-offset-2">
+                  <Link href={`/content/${item.slug}`}>{item.title}</Link>
+                </h3>
+
+                {/* Summary */}
+                <p className="text-sm text-neutral-500 leading-relaxed line-clamp-3 font-sans flex-1">
+                  {item.summary}
+                </p>
+
+                {/* Footer */}
+                <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-6 w-6 bg-black flex items-center justify-center text-white text-[10px] font-bold uppercase">
+                      {typeof item.author === 'object' ? item.author.name.slice(0, 2) : 'AU'}
                     </div>
-                    <span className="font-medium text-gray-400">
-                      {typeof item.author === 'object' ? item.author.name : 'Admin'}
+                    <span className="text-xs font-medium text-neutral-600">
+                      {typeof item.author === 'object' ? item.author.name : 'Author'}
                     </span>
                   </div>
-                  <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                  <span className="text-xs text-neutral-400">
+                    {new Date(item.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
                 </div>
               </article>
             ))}
           </div>
         )}
       </section>
+
+      {/* ── CTA Strip ────────────────────────────────────────────────────── */}
+      <section className="border-t border-neutral-200 bg-neutral-50">
+        <div className="mx-auto max-w-6xl px-6 py-16 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div>
+            <h2 className="font-sans text-2xl font-black text-black">Ready to publish?</h2>
+            <p className="text-sm text-neutral-500 mt-1">Sign in to the admin console and start creating.</p>
+          </div>
+          <Link href="/admin/login" className="btn-primary text-sm px-8 py-3 shrink-0">
+            Go to Admin Console →
+          </Link>
+        </div>
+      </section>
+
     </div>
   );
 }

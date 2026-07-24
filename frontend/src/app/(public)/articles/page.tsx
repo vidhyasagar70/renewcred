@@ -5,53 +5,62 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchContent, setFilters, setPage } from '@/store/slices/contentSlice';
 import Link from 'next/link';
 
+const CATEGORIES = ['all', 'Documentation', 'Blog', 'Page'];
+
 export default function ArticlesPage() {
   const dispatch = useAppDispatch();
   const { items, pagination, filters, isLoading, error } = useAppSelector((state) => state.content);
 
   useEffect(() => {
-    // Fetch only published content with active filters
     dispatch(fetchContent({ ...filters, status: 'published', page: pagination.page }));
   }, [dispatch, filters.type, filters.search, pagination.page]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setFilters({ search: e.target.value }));
     dispatch(setPage(1));
   };
 
-  const handleCategoryClick = (category: string) => {
-    dispatch(setFilters({ type: category as any }));
+  const handleCategory = (cat: string) => {
+    dispatch(setFilters({ type: cat }));
     dispatch(setPage(1));
   };
 
-  const categories = ['all', 'Documentation', 'Blog', 'Page'];
+  const activeType = filters.type ?? 'all';
+  const searchVal  = filters.search ?? '';
 
   return (
-    <div className="bg-gray-950 min-h-screen text-gray-100 py-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
-        
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">Articles</h1>
-          <p className="mt-2 text-sm text-gray-400">
-            Browse through documentation guides, updates, and deep dives.
+    <div className="bg-white min-h-screen">
+
+      {/* ── Page Header ─────────────────────────────────────────────────── */}
+      <div className="border-b border-black">
+        <div className="mx-auto max-w-6xl px-6 py-12">
+          <p className="label-xs mb-3">All Articles</p>
+          <h1 className="font-sans text-4xl sm:text-5xl font-black text-black tracking-tighter leading-none">
+            The Archive
+          </h1>
+          <p className="mt-3 text-sm text-neutral-500 font-sans max-w-md">
+            Browse documentation guides, blog posts, and pages — all rendered with rich text, tables, and math.
           </p>
         </div>
+      </div>
 
-        {/* Filter Controls */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-gray-800 pb-6">
-          {/* Categories Tab */}
-          <div className="flex flex-wrap items-center gap-2">
-            {categories.map((cat) => {
-              const isSelected = (filters.type ?? 'all') === cat || (cat === 'all' && (filters.type ?? 'all') === 'all');
+      <div className="mx-auto max-w-6xl px-6 py-10">
+
+        {/* ── Filters ──────────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-200 pb-6 mb-10">
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-1">
+            {CATEGORIES.map((cat) => {
+              const active = activeType === cat;
               return (
                 <button
                   key={cat}
-                  onClick={() => handleCategoryClick(cat)}
-                  className={`rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-all ${
-                    isSelected
-                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20'
-                      : 'border border-gray-850 bg-gray-900/60 text-gray-400 hover:bg-gray-800 hover:text-white'
+                  onClick={() => handleCategory(cat)}
+                  className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-widest border transition-all duration-150 ${
+                    active
+                      ? 'bg-black text-white border-black'
+                      : 'bg-white text-neutral-500 border-neutral-300 hover:border-black hover:text-black'
                   }`}
                 >
                   {cat === 'all' ? 'All' : cat}
@@ -60,106 +69,93 @@ export default function ArticlesPage() {
             })}
           </div>
 
-          {/* Search box */}
-          <div className="relative w-full max-w-md">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-            </span>
+          {/* Search */}
+          <div className="relative w-full sm:max-w-xs">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             <input
               type="text"
               placeholder="Search articles..."
-              value={filters.search ?? ''}
-              onChange={handleSearchChange}
-              className="w-full rounded-lg border border-gray-800 bg-gray-950 pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+              value={searchVal}
+              onChange={handleSearch}
+              className="w-full border border-neutral-300 bg-white pl-9 pr-4 py-2 text-sm text-black placeholder-neutral-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-colors"
             />
           </div>
         </div>
 
-        {/* Article Grid */}
+        {/* ── Article Grid ─────────────────────────────────────────────── */}
         {isLoading ? (
-          <div className="flex h-60 items-center justify-center text-gray-400">
-            <svg className="mr-3 h-6 w-6 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Loading articles...
+          <div className="flex h-64 items-center justify-center">
+            <div className="h-8 w-8 animate-spin border-2 border-black border-t-transparent" />
           </div>
         ) : error ? (
-          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-red-400 text-center">
-            {error}
+          <div className="border border-black p-6">
+            <p className="font-semibold text-black">Error: {error}</p>
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-20 text-gray-500 border border-dashed border-gray-800 rounded-2xl bg-gray-900/10">
-            No published articles found matching the current filters.
+          <div className="border border-dashed border-neutral-300 py-24 text-center">
+            <p className="text-sm text-neutral-400">No articles found matching your filters.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-px bg-neutral-200 border border-neutral-200 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
-              <article 
-                key={item._id} 
-                className="flex flex-col justify-between rounded-2xl border border-gray-800 bg-gray-900/20 p-6 transition-all hover:border-gray-700 hover:bg-gray-900/40 hover:-translate-y-1 duration-300"
+              <article
+                key={item._id}
+                className="flex flex-col bg-white p-8 group hover:-translate-y-0.5 hover:shadow-hard transition-all duration-150"
               >
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded bg-primary-950 text-primary-400 border border-primary-500/10 px-2.5 py-0.5 text-xs font-semibold">
-                      {item.category}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white line-clamp-2 hover:text-primary-400 transition-colors">
-                      <Link href={`/content/${item.slug}`}>
-                        {item.title}
-                      </Link>
-                    </h3>
-                    <p className="mt-2.5 text-sm text-gray-400 line-clamp-3 leading-relaxed">
-                      {item.summary}
-                    </p>
-                  </div>
-                </div>
+                <p className="label-xs text-neutral-400 mb-4">{item.category}</p>
 
-                <div className="mt-6 border-t border-gray-800/80 pt-4 flex items-center justify-between text-xs text-gray-500">
+                <h2 className="font-sans text-xl font-bold text-black leading-snug mb-3 group-hover:underline underline-offset-2">
+                  <Link href={`/content/${item.slug}`}>{item.title}</Link>
+                </h2>
+
+                <p className="text-sm text-neutral-500 leading-relaxed line-clamp-3 font-sans flex-1">
+                  {item.summary}
+                </p>
+
+                <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full bg-primary-600 flex items-center justify-center font-bold text-white uppercase text-[10px]">
-                      {typeof item.author === 'object' ? item.author.name.slice(0,2) : 'AD'}
+                    <div className="h-6 w-6 bg-black flex items-center justify-center text-white text-[10px] font-bold uppercase">
+                      {typeof item.author === 'object' ? item.author.name.slice(0, 2) : 'AU'}
                     </div>
-                    <span className="font-medium text-gray-400">
-                      {typeof item.author === 'object' ? item.author.name : 'Admin'}
+                    <span className="text-xs font-medium text-neutral-600">
+                      {typeof item.author === 'object' ? item.author.name : 'Author'}
                     </span>
                   </div>
-                  <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                  <span className="text-xs text-neutral-400">
+                    {new Date(item.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
                 </div>
               </article>
             ))}
           </div>
         )}
 
-        {/* Pagination */}
+        {/* ── Pagination ───────────────────────────────────────────────── */}
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-gray-800/60 pt-6">
-            <span className="text-xs text-gray-400">
-              Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} articles total)
+          <div className="mt-10 flex items-center justify-between border-t border-neutral-200 pt-6">
+            <span className="text-xs text-neutral-400 font-sans">
+              Page {pagination.page} of {pagination.totalPages} ({pagination.total} articles)
             </span>
             <div className="flex gap-2">
               <button
                 disabled={pagination.page <= 1 || isLoading}
                 onClick={() => dispatch(setPage(pagination.page - 1))}
-                className="rounded border border-gray-800 bg-gray-900 px-4 py-2 text-xs text-gray-300 hover:bg-gray-800 disabled:opacity-50"
+                className="border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-black hover:bg-black hover:text-white hover:border-black disabled:opacity-30 transition-all"
               >
-                Previous
+                ← Previous
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages || isLoading}
                 onClick={() => dispatch(setPage(pagination.page + 1))}
-                className="rounded border border-gray-800 bg-gray-900 px-4 py-2 text-xs text-gray-300 hover:bg-gray-800 disabled:opacity-50"
+                className="border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-black hover:bg-black hover:text-white hover:border-black disabled:opacity-30 transition-all"
               >
-                Next
+                Next →
               </button>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
